@@ -23,3 +23,29 @@ export const getAllMenus = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const createMenu = async ( request: Request, response: Response) => {
+    try {
+     const { name, price, category, description } = request.body
+     const uuid = uuidv4()
+
+     const newMenu = await prisma.menu.create({
+        data: { uuid, name, price: Number(price), category, description}
+     })
+
+     return response.json({
+        status: true,
+        data:newMenu,
+        message: `New menu has created`
+    }).status(200)
+} catch (error) {
+    return response
+        .json({
+            status: false,
+            message: `There is an error. ${error}`
+        })
+        .status(400)
+    }
+}
+
+
