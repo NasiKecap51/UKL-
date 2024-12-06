@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,73 +10,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  Manager
-  Cashier
+enum Pengguna {
+  Admin
+  Peminjam
 }
 
-enum Category {
-  Food
-  Drink
-  Snack
-}
-
-enum Payment_Method {
-  Cash
-  Qris
-}
-
-enum Status {
-  New
-  Paid
-  Done
+enum Jenis {
+  Elektronik
+  AlatTulis
+  PeralatanOlahraga
+  YangLain
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  uuid            String   @default("")
-  name            String   @default("")
-  email           String   @unique @default("")
-  password        String   @default("")
-  profile_picture String   @default("")
-  role            Role     @default(Cashier)
-  createdAt       DateTime @default(now())
-  updateAt        DateTime @updatedAt
-  orderDetail     Order[]
+  id_user   Int       @id @default(autoincrement())
+  nama      String    @default("")
+  email     String    @unique @default("")
+  nomorTLP  String    @default("")
+  password  String    @default("")
+  role      Pengguna
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+  requests  Request[] @relation("UserRequests")
 }
 
-model Menu {
-  id          Int          @id @default(autoincrement())
-  uuid        String       @default("")
-  name        String       @default("")
-  price       Int          @default(0)
-  category    Category     @default(Food)
-  picture     String       @default("")
-  description String       @default("") @db.Text
-  orderList   Order_List[]
+model Items {
+  id_item   Int       @id @default(autoincrement())
+  item_name String    @default("")
+  category  Jenis
+  quantity  Int       @default(0)
+  location  String    @default("")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+  requests  Request[] @relation("ItemRequests")
 }
 
-model Order {
-  id             Int            @id @default(autoincrement())
-  uuid           String         @default("")
-  customer       String         @default("")
-  table_number   String         @default("")
-  total_price    Int            @default(0)
-  payment_method Payment_Method @default(Cash)
-  idUser         Int?
-  user           User?          @relation(fields: [idUser], references: [id])
-  status         Status         @default(New)
-  orderList      Order_List[]
-}
+model Request {
+  borrowId         Int       @id @default(autoincrement())
+  user             User      @relation("UserRequests", fields: [userId], references: [id_user], onDelete: Cascade)
+  userId           Int
+  item             Items     @relation("ItemRequests", fields: [itemId], references: [id_item], onDelete: Cascade)
+  itemId           Int
+  borrowDate       DateTime  
+  returnDate       DateTime  
+  actualReturnDate DateTime @default(now())
+  status           String    @default("BORROWED")
 
-model Order_List {
-  id       Int    @id @default(autoincrement())
-  uuid     String @default("")
-  idOrder  Int?
-  order    Order? @relation(fields: [idOrder], references: [id])
-  idMenu   Int?
-  menu     Menu?  @relation(fields: [idMenu], references: [id])
-  quantity Int    @default(0)
-  note     String @default("") @db.Text
+  // Indexes for query efficiency
+  @@index([borrowDate])
+  @@index([actualReturnDate])
+  @@index([status])
 }
-

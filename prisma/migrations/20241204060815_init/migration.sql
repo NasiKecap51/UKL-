@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `items` ADD COLUMN `quantitz` INTEGER NOT NULL DEFAULT 0;
